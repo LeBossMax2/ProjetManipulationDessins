@@ -55,9 +55,14 @@ def load_files():
     files = []
     for filename in os.listdir(directory):
         if filename.endswith('.npy') :
-            print(directory + '/' + filename)
-            files = np.append(files, np.load(directory + '/' + filename, mmap_mode='r'))
+            if (len(files) == 0) :
+                files = np.load(directory + '/' + filename, mmap_mode='r')
+            else :
+                print(directory + '/' + filename)
+                print(np.load(directory + '/' + filename, mmap_mode='r'))
+                files = np.append(files, np.load(directory + '/' + filename, mmap_mode='r'), axis=0)
     print("Files loaded")
-    return np.random.shuffle(files)
+    np.random.shuffle(files)
+    return files
 
-files = load_files()
+print(load_files())
