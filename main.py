@@ -6,8 +6,12 @@ from tensorflow.keras import layers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
 from tensorflow.keras import optimizers
 
-compressed_size = 8
+import os
 
+from matplotlib import pyplot as plt
+
+compressed_size = 8
+directory = r'data'
 
 class Sampling(layers.Layer):
     
@@ -46,3 +50,14 @@ decoder = keras.Model(input_layer, layer, name="decoder")
 
 decoder.summary()
 decoder.compile(optimizer=optimizers.SGD(learning_rate=0.1), loss="mse", metrics=["mae"])
+
+def load_files():
+    files = []
+    for filename in os.listdir(directory):
+        if filename.endswith('.npy') :
+            print(directory + '/' + filename)
+            files = np.append(files, np.load(directory + '/' + filename, mmap_mode='r'))
+    print("Files loaded")
+    return np.random.shuffle(files)
+
+files = load_files()
