@@ -28,12 +28,7 @@ input_layer = keras.Input(shape=(28, 28, 1))
 layer = Conv2D(16, 3, activation="relu", strides=2, padding="same")(input_layer)
 conv_output = Conv2D(32, 3, activation="relu", strides=2, padding="same")(layer)
 layer = Flatten()(conv_output)
-layer = Dense(16, activation="relu")(layer)
-
-z_mean = Dense(compressed_size, name="z_mean")(layer)
-z_log_var = Dense(compressed_size, name="z_log_var")(layer)
-
-z = Sampling()([z_mean, z_log_var])
+z = Dense(compressed_size, activation="relu")(layer)
 
 encoder = keras.Model(input_layer, z, name="encoder")
 
