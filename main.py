@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import sklearn.model_selection
+import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
@@ -9,7 +10,7 @@ import os
 
 from matplotlib import pyplot as plt
 
-compressed_size = 8
+compressed_size = 32
 directory = r'../data'
 
 class Sampling(layers.Layer):
@@ -56,7 +57,7 @@ def load_files():
         if filename.endswith('.npy') :
             print(directory + '/' + filename)
             f = np.load(directory + '/' + filename, mmap_mode='r')
-            files = np.append(files, f.reshape((f.shape[0], 28, 28, 1)), axis=0)
+            files = np.append(files, f.reshape((f.shape[0], 28, 28, 1)) / 255.0, axis=0)
     print("Files loaded")
     np.random.shuffle(files)
     return files
@@ -69,4 +70,20 @@ train_data, valid_data = sklearn.model_selection.train_test_split(data, test_siz
 
 print("Data ready")
 
-autoencoder.fit(train_data, train_data, epochs = 4, validation_data = (valid_data, valid_data), verbose = 2)
+autoencoder.fit(train_data, train_data, epochs = 8, validation_data = (valid_data, valid_data), verbose = 1)
+
+# Show prediction examples
+show_count = 4
+plt.figure(figsize=(8, 8))
+for i in range(show_count):
+    plt.subplot(21 + i * 2 + 100 * show_count)
+    plt.imshow(data[i], cmap="gray")
+    plt.colorbar()
+    plt.axis('off')
+    res = autoencoder.predict(np.array([data[i]]))[0]
+    plt.subplot(22 + i * 2 + 100 * show_count)
+    plt.imshow(res, cmap="gray")
+    plt.axis('off')
+    plt.colorbar()
+plt.tight_layout()
+plt.show()
