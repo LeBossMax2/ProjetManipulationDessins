@@ -11,7 +11,7 @@ import os
 from matplotlib import pyplot as plt
 
 compressed_size = 32
-directory = r'../data'
+directory = r'./data'
 
 class Sampling(layers.Layer):
     
@@ -70,20 +70,20 @@ train_data, valid_data = sklearn.model_selection.train_test_split(data, test_siz
 
 print("Data ready")
 
-autoencoder.fit(train_data, train_data, epochs = 8, validation_data = (valid_data, valid_data), verbose = 1)
+autoencoder.fit(train_data, train_data, epochs = 0, validation_data = (valid_data, valid_data), verbose = 1)
 
 # Show prediction examples
 show_count = 4
-plt.figure(figsize=(8, 8))
-for i in range(show_count):
-    plt.subplot(21 + i * 2 + 100 * show_count)
-    plt.imshow(data[i], cmap="gray")
-    plt.colorbar()
-    plt.axis('off')
+fig, axes = plt.subplots(nrows=show_count, ncols=2)
+
+for i in range(0,8,2)  :
+    im = axes.flat[i].imshow(data[i], cmap="gray")
+    axes.flat[i].axis('off')
     res = autoencoder.predict(np.array([data[i]]))[0]
-    plt.subplot(22 + i * 2 + 100 * show_count)
-    plt.imshow(res, cmap="gray")
-    plt.axis('off')
-    plt.colorbar()
-plt.tight_layout()
+    axes.flat[i+1].imshow(res, cmap="gray")
+    axes.flat[i+1].axis('off')
+
+fig.subplots_adjust(right=0.8)
+cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+fig.colorbar(im, cax=cbar_ax)
 plt.show()
