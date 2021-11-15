@@ -39,7 +39,7 @@ d_input_layer = keras.Input(shape=(compressed_size,))
 layer = layers.Dense(conv_output.shape[1] * conv_output.shape[2] * conv_output.shape[3], activation="relu")(d_input_layer)
 layer = layers.Reshape(conv_output.shape[1:4])(layer)
 layer = Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same")(layer)
-layer = Conv2DTranspose(1, 3, activation="relu", strides=2, padding="same")(layer)
+layer = Conv2DTranspose(1, 3, activation="sigmoid", strides=2, padding="same")(layer)
 
 decoder = keras.Model(d_input_layer, layer, name="decoder")
 
@@ -69,9 +69,7 @@ print(f"Shape of data: {data.shape}")
 train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
 
 print("Data ready")
-
-autoencoder.fit(train_data, train_data, epochs = 0, validation_data = (valid_data, valid_data), verbose = 1)
-
+'''
 # Show prediction examples
 show_count = 4
 fig, axes = plt.subplots(nrows=show_count, ncols=2)
@@ -87,3 +85,29 @@ fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 fig.colorbar(im, cax=cbar_ax)
 plt.show()
+'''
+
+autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
+
+
+autoencoder.save_weights("weights")
+#load_status = autoencoder.load_weights("weights")
+
+
+# Show prediction examples
+show_count = 6
+for k in range(100):
+    plt.figure(figsize=(14, 4))
+    for i in range(show_count):
+        d = valid_data[i + k * show_count]
+        plt.subplot(2, show_count, 1 + i)
+        plt.imshow(d, cmap="gray")
+        plt.colorbar()
+        plt.axis('off')
+        res = autoencoder.predict(np.array([d]))[0]
+        plt.subplot(2, show_count, 1 + i + show_count)
+        plt.imshow(res, cmap="gray")
+        plt.axis('off')
+        plt.colorbar()
+    plt.tight_layout()
+    plt.show()
