@@ -27,6 +27,36 @@ def load_files():
     np.random.shuffle(files)
     return files
 
+
+def print_mean(data_):
+    mean_data = np.mean(encoder.predict(data_), axis=0)
+    res = decoder.predict(np.array([mean_data])).reshape((28,28))
+    plt.imshow(res, cmap="gray")
+    plt.show()
+
+def testEachDimension(encoder, decoder, data, var):
+    for k in range(10):
+        d = data[k].reshape((28,28))
+        plt.imshow(d, cmap="gray")
+        lattentvector = encoder.predict(np.array([d]))
+        show_count = len(lattentvector[0]) 
+        print(f"LATTENTVECTOR:{lattentvector}\n\n")
+
+        plt.figure(figsize=(14, 4))
+        for i in range(show_count):
+            for j in range(len(var)):
+                tmp_latt = np.copy(lattentvector)
+                tmp_latt[0][i] += var[j]
+                print(tmp_latt[0])
+                res = decoder.predict(tmp_latt).reshape((28,28))
+                plt.subplot(len(var), show_count, 1 + j*show_count + i)
+                plt.imshow(res, cmap="gray")
+                plt.axis('off')
+                #plt.colorbar()
+            print("\n\n")
+        plt.tight_layout()
+        plt.show()
+
 data = load_files()
 
 print(f"Shape of data: {data.shape}")
@@ -40,35 +70,4 @@ print("Data ready")
 
 load_status = autoencoder.load_weights("weights")
 
-def print_mean(data_):
-    mean_data = np.mean(encoder.predict(data_), axis=0)
-    res = decoder.predict(np.array([mean_data])).reshape((28,28))
-    plt.imshow(res, cmap="gray")
-    plt.show()
-
-d = data[0].reshape((28,28))
-plt.imshow(d, cmap="gray")
-lattentvector = encoder.predict(np.array([d]))
-show_count = len(lattentvector[0])
-print(f"LATTENTVECTOR:{lattentvector}\n\n")
-
-var = [-2, -1, 0, 1, 2]
-
-for k in range(10):
-    fig = plt.figure(figsize=(14, 4))
-    for i in range(show_count):
-        for j in range(len(var)):
-            tmp_latt = np.copy(lattentvector)
-            tmp_latt[0][i] += var[j]
-            res = decoder.predict(tmp_latt).reshape((28,28))
-            plt.subplot(5, show_count, 1 + i + show_count*j)
-            plt.imshow(res, cmap="gray")
-            plt.axis('off')
-            plt.colorbar()
-    plt.tight_layout()
-    plt.show()
-
-
-res = decoder.predict(lattentvector)[0].reshape((28,28))
-plt.imshow(res, cmap="gray")
-plt.show()
+testEachDimension(encoder, decoder, data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
