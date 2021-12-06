@@ -29,18 +29,7 @@ def load_files():
 
 data = load_files()
 
-print(f"Shape of data: {data.shape}")
-
-train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
-
-print("Data ready")
-
-autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
-
-
-autoencoder.save_weights("weights")
 load_status = autoencoder.load_weights("weights")
-
 
 show_count = 6
 d = valid_data[0]
