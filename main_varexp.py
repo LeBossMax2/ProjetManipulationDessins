@@ -27,18 +27,6 @@ def load_files():
     np.random.shuffle(files)
     return files
 
-data = load_files()
-
-print(f"Shape of data: {data.shape}")
-
-train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
-
-print("Data ready")
-
-#autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
-#autoencoder.save_weights("weights")
-
-load_status = autoencoder.load_weights("weights")
 
 def testEachDimension(encoder, decoder, data, var):
     for k in range(10):
@@ -62,6 +50,20 @@ def testEachDimension(encoder, decoder, data, var):
             print("\n\n")
         plt.tight_layout()
         plt.show()
+
+data = load_files()
+
+print(f"Shape of data: {data.shape}")
+
+train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
+
+print("Data ready")
+
+#autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
+#autoencoder.save_weights("weights")
+
+load_status = autoencoder.load_weights("weights")
+
 
 testEachDimension(encoder, decoder, data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
 
