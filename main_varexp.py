@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
-from model import get_model
+from model_AE import get_model
 import os
 
 from matplotlib import pyplot as plt
@@ -35,10 +35,10 @@ train_data, valid_data = sklearn.model_selection.train_test_split(data, test_siz
 
 print("Data ready")
 
-#autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
-#autoencoder.save_weights("weights")
+autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
+autoencoder.save_weights("weights")
 
-load_status = autoencoder.load_weights("weights")
+#load_status = autoencoder.load_weights("weights")
 
 
 
