@@ -29,8 +29,13 @@ def load_files():
 
 
 def print_mean(data_):
+    plt.figure(figsize=(14, 4))
+    ultimate_mean_image = np.mean(data_, axis=0)
+    plt.subplot(1, 2, 1)
+    plt.imshow(ultimate_mean_image, cmap="gray")
     mean_data = np.mean(encoder.predict(data_), axis=0)
     res = decoder.predict(np.array([mean_data])).reshape((28,28))
+    plt.subplot(1, 2, 2)
     plt.imshow(res, cmap="gray")
     plt.show()
 
@@ -47,13 +52,11 @@ def test_each_dimension(encoder, decoder, data, var):
             for j in range(len(var)):
                 tmp_latt = np.copy(lattentvector)
                 tmp_latt[0][i] += var[j]
-                print(tmp_latt[0])
                 res = decoder.predict(tmp_latt).reshape((28,28))
                 plt.subplot(len(var), show_count, 1 + j*show_count + i)
                 plt.imshow(res, cmap="gray")
                 plt.axis('off')
                 #plt.colorbar()
-            print("\n\n")
         plt.tight_layout()
         plt.show()
 
@@ -69,5 +72,7 @@ print("Data ready")
 #autoencoder.save_weights("weights")
 
 load_status = autoencoder.load_weights("weights")
+
+print_mean(valid_data)
 
 test_each_dimension(encoder, decoder, data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
