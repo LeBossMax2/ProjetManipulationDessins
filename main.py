@@ -68,20 +68,21 @@ autoencoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 def load_files():
     files = np.empty((0, 28, 28, 1))
+    categories = []
     for filename in os.listdir(directory):
         if filename.endswith('.npy') :
             print(directory + '/' + filename)
             f = np.load(directory + '/' + filename, mmap_mode='r') / 255.0 # normalize to [0.0, 1.0] range
             files = np.append(files, f.reshape((f.shape[0], 28, 28, 1)), axis=0)
+            categories += [ os.path.basename(filename) for _ in range(len(f))]
     print("Files loaded")
-    np.random.shuffle(files)
-    return files
+    return files, np.array(categories)
 
-data = load_files()
+data, categories = load_files()
 
 print(f"Shape of data: {data.shape}")
 
-train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
+train_data, valid_data, train_cat, valid_cat = sklearn.model_selection.train_test_split(data, categories, test_size=0.33, shuffle=True)
 
 print("Data ready")
 '''
@@ -110,15 +111,21 @@ autoencoder.save_weights("weights")
 
 def plot_label_clusters(encoder, x, y):
     # display a 2D plot of the digit classes in the latent space
-    z = encoder.predict(x)
-    plt.figure(figsize=(12, 10))
-    plt.scatter(z[:, 0], z[:, 1], c=y, alpha=.4, s=3**2)
-    plt.colorbar()
-    plt.xlabel("z[0]")
-    plt.ylabel("z[1]")
+
+    categories = np.unique(y)
+    vals = [x[y == cat] for cat in categories]
+
+    plt.figure(figsize=(18, 10))
+    for zi in range(0, compressed_size, 2):
+        plt.subplot(4, compressed_size // 8, zi // 2 + 1)
+        for cat, val in zip(categories, vals):
+            z = encoder.predict(val)
+            plt.scatter(z[:, zi], z[:, zi + 1], label=cat, alpha=.2, s=3**2)
+        plt.xlabel("z[" + str(zi) + "]")
+        plt.ylabel("z[" + str(zi + 1) + "]")
     plt.show()
 
-plot_label_clusters(encoder, valid_data, None)
+plot_label_clusters(encoder, valid_data, valid_cat)
 
 # Show prediction examples
 show_count = 6
