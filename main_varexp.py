@@ -31,20 +31,39 @@ data = load_files()
 
 print(f"Shape of data: {data.shape}")
 
-train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
+#train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
 
 print("Data ready")
 
-autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
+# autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
 
-#load_status = autoencoder.load_weights("weights")
+load_status = autoencoder.load_weights("weights")
 
 
-show_count = 6
-d = valid_data[0].reshape((28,28))
+
+d = data[0].reshape((28,28))
 plt.imshow(d, cmap="gray")
 lattentvector = encoder.predict(np.array([d]))
+show_count = len(lattentvector) 
 print(f"LATTENTVECTOR:{lattentvector}\n\n")
+
+for k in range(10):
+    plt.figure(figsize=(14, 4))
+    for i in range(show_count):
+        d = data[i + k * show_count]
+        plt.subplot(2, show_count, 1 + i)
+        plt.imshow(d, cmap="gray")
+        plt.colorbar()
+        plt.axis('off')
+        res = autoencoder.predict(np.array([d]))[0].reshape((28,28))
+        plt.subplot(2, show_count, 1 + i + show_count)
+        plt.imshow(res, cmap="gray")
+        plt.axis('off')
+        plt.colorbar()
+    plt.tight_layout()
+    plt.show()
+
+
 res = decoder.predict(lattentvector)[0].reshape((28,28))
 plt.imshow(res, cmap="gray")
 plt.show()
