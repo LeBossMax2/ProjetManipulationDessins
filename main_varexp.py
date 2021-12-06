@@ -43,7 +43,7 @@ autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_dat
 show_count = 6
 d = valid_data[0].reshape((28,28))
 plt.imshow(d, cmap="gray")
-lattentvector = encoder.predict(np.array([d]))[0]
+lattentvector = encoder.predict(np.array([d]))
 print(f"LATTENTVECTOR:{lattentvector}\n\n")
 res = decoder.predict(lattentvector)[0].reshape((28,28))
 plt.imshow(res, cmap="gray")
