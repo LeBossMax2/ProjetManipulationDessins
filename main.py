@@ -106,11 +106,20 @@ fig.colorbar(im, cax=cbar_ax)
 plt.show()
 '''
 
-hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 20, validation_data = (valid_data, valid_data), verbose = 2, callbacks=[tf.keras.callbacks.EarlyStopping(patience=2, monitor="val_loss", min_delta=0)])
+hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 20, validation_data = (valid_data, valid_data), verbose = 2, callbacks=[EarlyStopping(patience=2, monitor="val_loss", min_delta=0)])
 
 
 autoencoder.save_weights("weights")
 #load_status = autoencoder.load_weights("weights")
+
+# Show loss history
+plt.plot(hist.history['loss'])
+plt.plot(hist.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
 
 def plot_label_clusters(encoder, x, y):
     # display a 2D plot of the digit classes in the latent space
