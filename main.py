@@ -125,12 +125,12 @@ show_count = 6
 for k in range(100):
     plt.figure(figsize=(14, 4))
     for i in range(show_count):
-        d = valid_data[i + k * show_count]
+        d = valid_data[i + k * show_count].reshape((28,28))
         plt.subplot(2, show_count, 1 + i)
         plt.imshow(d, cmap="gray")
         plt.colorbar()
         plt.axis('off')
-        res = autoencoder.predict(np.array([d]))[0]
+        res = autoencoder.predict(np.array([d]))[0].reshape((28,28))
         plt.subplot(2, show_count, 1 + i + show_count)
         plt.imshow(res, cmap="gray")
         plt.axis('off')
