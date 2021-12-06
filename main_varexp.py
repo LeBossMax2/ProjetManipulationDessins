@@ -35,30 +35,33 @@ train_data, valid_data = sklearn.model_selection.train_test_split(data, test_siz
 
 print("Data ready")
 
-autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
-autoencoder.save_weights("weights")
+#autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
+#autoencoder.save_weights("weights")
 
-#load_status = autoencoder.load_weights("weights")
+load_status = autoencoder.load_weights("weights")
 
-
+def print_mean(data_):
+    mean_data = np.mean(encoder.predict(data_), axis=0)
+    res = decoder.predict(np.array([mean_data])).reshape((28,28))
+    plt.imshow(res, cmap="gray")
+    plt.show()
 
 d = data[0].reshape((28,28))
 plt.imshow(d, cmap="gray")
 lattentvector = encoder.predict(np.array([d]))
-show_count = len(lattentvector) 
+show_count = len(lattentvector[0])
 print(f"LATTENTVECTOR:{lattentvector}\n\n")
 
-var = [-10, -1, 0, 1, 10]
+var = [-2, -1, 0, 1, 2]
 
 for k in range(10):
-    plt.figure(figsize=(14, 4))
+    fig = plt.figure(figsize=(14, 4))
     for i in range(show_count):
         for j in range(len(var)):
             tmp_latt = np.copy(lattentvector)
-            tmp_latt[i] += var[j]
-            print(tmp_latt)
+            tmp_latt[0][i] += var[j]
             res = decoder.predict(tmp_latt).reshape((28,28))
-            plt.subplot(show_count, 5, 1 + j + len(var)*i)
+            plt.subplot(5, show_count, 1 + i + show_count*j)
             plt.imshow(res, cmap="gray")
             plt.axis('off')
             plt.colorbar()
