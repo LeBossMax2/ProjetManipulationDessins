@@ -6,12 +6,14 @@ import tensorflow.keras.backend as K
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
+from tensorflow.keras.callbacks import EarlyStopping
 
 import os
 
 from matplotlib import pyplot as plt
 
-compressed_size = 32
+compressed_size = 64
+lambda_loss = 1e-5
 directory = r'./data'
 
 class VariationalLayer(layers.Layer):
@@ -22,7 +24,7 @@ class VariationalLayer(layers.Layer):
         # KL divergence loss
         kl_batch = K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
         
-        self.add_loss(-0.5 * K.mean(kl_batch) / (28 * 28), inputs = inputs)
+        self.add_loss(-0.5 * K.mean(kl_batch) * lambda_loss, inputs = inputs)
 
         # Sampling reparameterization
         batch = tf.shape(z_mean)[0]
@@ -31,7 +33,8 @@ class VariationalLayer(layers.Layer):
         return z_mean + K.exp(0.5 * z_log_var) * epsilon
 
 
-optimizer = optimizers.Adam(learning_rate=0.002)
+# learning_rate=0.002
+optimizer = optimizers.Adam(learning_rate=0.0005)
 loss = "binary_crossentropy"
 metrics = ["mae"]
 
@@ -103,7 +106,7 @@ fig.colorbar(im, cax=cbar_ax)
 plt.show()
 '''
 
-hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 4, validation_data = (valid_data, valid_data), verbose = 1)
+hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 20, validation_data = (valid_data, valid_data), verbose = 2, callbacks=[tf.keras.callbacks.EarlyStopping(patience=2, monitor="val_loss", min_delta=0)])
 
 
 autoencoder.save_weights("weights")
