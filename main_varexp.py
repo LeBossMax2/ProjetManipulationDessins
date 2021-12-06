@@ -34,7 +34,7 @@ def print_mean(data_):
     plt.imshow(res, cmap="gray")
     plt.show()
 
-def testEachDimension(encoder, decoder, data, var):
+def test_each_dimension(encoder, decoder, data, var):
     for k in range(10):
         d = data[k].reshape((28,28))
         plt.imshow(d, cmap="gray")
@@ -70,4 +70,4 @@ print("Data ready")
 
 load_status = autoencoder.load_weights("weights")
 
-testEachDimension(encoder, decoder, data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
+test_each_dimension(encoder, decoder, data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
