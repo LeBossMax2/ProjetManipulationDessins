@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import sklearn.model_selection
 import matplotlib.pyplot as plt
+import tensorflow.keras.backend as K
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
@@ -13,27 +14,41 @@ from matplotlib import pyplot as plt
 compressed_size = 32
 directory = r'./data'
 
-class Sampling(layers.Layer):
+class VariationalLayer(layers.Layer):
     
     def call(self, inputs):
         z_mean, z_log_var = inputs
+
+        # KL divergence loss
+        kl_batch = K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+        
+        self.add_loss(-0.5 * K.mean(kl_batch) / (28 * 28), inputs = inputs)
+
+        # Sampling reparameterization
         batch = tf.shape(z_mean)[0]
         dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+        epsilon = K.random_normal(shape=(batch, dim))
+        return z_mean + K.exp(0.5 * z_log_var) * epsilon
 
+
+optimizer = optimizers.Adam(learning_rate=0.002)
+loss = "binary_crossentropy"
+metrics = ["mae"]
 
 e_input_layer = keras.Input(shape=(28, 28, 1))
 
 layer = Conv2D(16, 3, activation="relu", strides=2, padding="same")(e_input_layer)
 conv_output = Conv2D(32, 3, activation="relu", strides=2, padding="same")(layer)
 layer = Flatten()(conv_output)
-z = Dense(compressed_size, activation="relu")(layer)
+layer = Dense(128, activation="relu")(layer)
+z_mean = Dense(compressed_size, name="z_mean")(layer)
+z_log_var = Dense(compressed_size, name="z_log_var")(layer)
+z = VariationalLayer()([z_mean, z_log_var])
 
 encoder = keras.Model(e_input_layer, z, name="encoder")
 
 encoder.summary()
-encoder.compile(optimizer=optimizers.Adam(learning_rate=0.002), loss="mse", metrics=["mae"])
+encoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 d_input_layer = keras.Input(shape=(compressed_size,))
 layer = layers.Dense(conv_output.shape[1] * conv_output.shape[2] * conv_output.shape[3], activation="relu")(d_input_layer)
@@ -44,12 +59,12 @@ layer = Conv2DTranspose(1, 3, activation="sigmoid", strides=2, padding="same")(l
 decoder = keras.Model(d_input_layer, layer, name="decoder")
 
 decoder.summary()
-decoder.compile(optimizer=optimizers.Adam(learning_rate=0.002), loss="mse", metrics=["mae"])
+decoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-autoencoder = keras.Model(e_input_layer, decoder(z), name="auto-encoder")
+autoencoder = keras.Model(e_input_layer, decoder(encoder(e_input_layer)), name="auto-encoder")
 
 autoencoder.summary()
-autoencoder.compile(optimizer=optimizers.Adam(learning_rate=0.002), loss="mse", metrics=["mae"])
+autoencoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 def load_files():
     files = np.empty((0, 28, 28, 1))
@@ -87,24 +102,35 @@ fig.colorbar(im, cax=cbar_ax)
 plt.show()
 '''
 
-autoencoder.fit(train_data, train_data, epochs = 2, validation_data = (valid_data, valid_data), verbose = 1)
+hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 4, validation_data = (valid_data, valid_data), verbose = 1)
 
 
 autoencoder.save_weights("weights")
 #load_status = autoencoder.load_weights("weights")
 
+def plot_label_clusters(encoder, x, y):
+    # display a 2D plot of the digit classes in the latent space
+    z = encoder.predict(x)
+    plt.figure(figsize=(12, 10))
+    plt.scatter(z[:, 0], z[:, 1], c=y, alpha=.4, s=3**2)
+    plt.colorbar()
+    plt.xlabel("z[0]")
+    plt.ylabel("z[1]")
+    plt.show()
+
+plot_label_clusters(encoder, valid_data, None)
 
 # Show prediction examples
 show_count = 6
 for k in range(100):
     plt.figure(figsize=(14, 4))
     for i in range(show_count):
-        d = valid_data[i + k * show_count]
+        d = valid_data[i + k * show_count].reshape((28,28))
         plt.subplot(2, show_count, 1 + i)
         plt.imshow(d, cmap="gray")
         plt.colorbar()
         plt.axis('off')
-        res = autoencoder.predict(np.array([d]))[0]
+        res = autoencoder.predict(np.array([d]))[0].reshape((28,28))
         plt.subplot(2, show_count, 1 + i + show_count)
         plt.imshow(res, cmap="gray")
         plt.axis('off')
