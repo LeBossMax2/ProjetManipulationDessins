@@ -6,12 +6,14 @@ import tensorflow.keras.backend as K
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
+from tensorflow.keras.callbacks import EarlyStopping
 
 import os
 
 from matplotlib import pyplot as plt
 
-compressed_size = 32
+compressed_size = 64
+lambda_loss = 1e-5
 directory = r'./data'
 
 class VariationalLayer(layers.Layer):
@@ -22,7 +24,7 @@ class VariationalLayer(layers.Layer):
         # KL divergence loss
         kl_batch = K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
         
-        self.add_loss(-0.5 * K.mean(kl_batch) / (28 * 28), inputs = inputs)
+        self.add_loss(-0.5 * K.mean(kl_batch) * lambda_loss, inputs = inputs)
 
         # Sampling reparameterization
         batch = tf.shape(z_mean)[0]
@@ -31,7 +33,8 @@ class VariationalLayer(layers.Layer):
         return z_mean + K.exp(0.5 * z_log_var) * epsilon
 
 
-optimizer = optimizers.Adam(learning_rate=0.002)
+# learning_rate=0.002
+optimizer = optimizers.Adam(learning_rate=0.0005)
 loss = "binary_crossentropy"
 metrics = ["mae"]
 
@@ -68,20 +71,21 @@ autoencoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
 def load_files():
     files = np.empty((0, 28, 28, 1))
+    categories = []
     for filename in os.listdir(directory):
         if filename.endswith('.npy') :
             print(directory + '/' + filename)
             f = np.load(directory + '/' + filename, mmap_mode='r') / 255.0 # normalize to [0.0, 1.0] range
             files = np.append(files, f.reshape((f.shape[0], 28, 28, 1)), axis=0)
+            categories += [ os.path.basename(filename) for _ in range(len(f))]
     print("Files loaded")
-    np.random.shuffle(files)
-    return files
+    return files, np.array(categories)
 
-data = load_files()
+data, categories = load_files()
 
 print(f"Shape of data: {data.shape}")
 
-train_data, valid_data = sklearn.model_selection.train_test_split(data, test_size=0.33)
+train_data, valid_data, train_cat, valid_cat = sklearn.model_selection.train_test_split(data, categories, test_size=0.33, shuffle=True)
 
 print("Data ready")
 '''
@@ -102,23 +106,38 @@ fig.colorbar(im, cax=cbar_ax)
 plt.show()
 '''
 
-hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 4, validation_data = (valid_data, valid_data), verbose = 1)
+hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 20, validation_data = (valid_data, valid_data), verbose = 2, callbacks=[EarlyStopping(patience=2, monitor="val_loss", min_delta=0)])
 
 
 autoencoder.save_weights("weights")
 #load_status = autoencoder.load_weights("weights")
 
+# Show loss history
+plt.plot(hist.history['loss'])
+plt.plot(hist.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+
 def plot_label_clusters(encoder, x, y):
     # display a 2D plot of the digit classes in the latent space
-    z = encoder.predict(x)
-    plt.figure(figsize=(12, 10))
-    plt.scatter(z[:, 0], z[:, 1], c=y, alpha=.4, s=3**2)
-    plt.colorbar()
-    plt.xlabel("z[0]")
-    plt.ylabel("z[1]")
+
+    categories = np.unique(y)
+    vals = [x[y == cat] for cat in categories]
+
+    plt.figure(figsize=(18, 10))
+    for zi in range(0, compressed_size, 2):
+        plt.subplot(4, compressed_size // 8, zi // 2 + 1)
+        for cat, val in zip(categories, vals):
+            z = encoder.predict(val)
+            plt.scatter(z[:, zi], z[:, zi + 1], label=cat, alpha=.2, s=3**2)
+        plt.xlabel("z[" + str(zi) + "]")
+        plt.ylabel("z[" + str(zi + 1) + "]")
     plt.show()
 
-plot_label_clusters(encoder, valid_data, None)
+plot_label_clusters(encoder, valid_data, valid_cat)
 
 # Show prediction examples
 show_count = 6
