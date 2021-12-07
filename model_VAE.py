@@ -34,7 +34,7 @@ class VariationalLayer(layers.Layer):
 def get_model():
     optimizer = optimizers.Adam(learning_rate=0.0005)
     loss = "binary_crossentropy"
-    metrics = ["mae"]
+    metrics = ["mae", "accuracy"]
 
     e_input_layer = keras.Input(shape=(28, 28))
 
