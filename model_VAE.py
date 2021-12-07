@@ -4,7 +4,7 @@ import sklearn.model_selection
 import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose, Reshape
 import tensorflow.keras.backend as K
 
 import os
@@ -36,9 +36,9 @@ def get_model():
     loss = "binary_crossentropy"
     metrics = ["mae"]
 
-    e_input_layer = keras.Input(shape=(28, 28, 1))
+    e_input_layer = keras.Input(shape=(28, 28))
 
-    layer = Conv2D(16, 3, activation="relu", strides=2, padding="same")(e_input_layer)
+    layer = Conv2D(16, 3, activation="relu", strides=2, padding="same")(Reshape((28, 28, 1))(e_input_layer))
     conv_output = Conv2D(32, 3, activation="relu", strides=2, padding="same")(layer)
     layer = Flatten()(conv_output)
     layer = Dense(128, activation="relu")(layer)
@@ -56,6 +56,7 @@ def get_model():
     layer = layers.Reshape(conv_output.shape[1:4])(layer)
     layer = Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same")(layer)
     layer = Conv2DTranspose(1, 3, activation="sigmoid", strides=2, padding="same")(layer)
+    layer = Reshape((28, 28))(layer)
 
     decoder = keras.Model(d_input_layer, layer, name="decoder")
 

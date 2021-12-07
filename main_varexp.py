@@ -17,12 +17,12 @@ directory = r'./data'
 autoencoder, encoder, decoder = get_model()
 
 def load_files():
-    files = np.empty((0, 28, 28, 1))
+    files = np.empty((0, 28, 28))
     for filename in os.listdir(directory):
         if filename.endswith('.npy') :
             print(directory + '/' + filename)
             f = np.load(directory + '/' + filename, mmap_mode='r') / 255.0 # normalize to [0.0, 1.0] range
-            files = np.append(files, f.reshape((f.shape[0], 28, 28, 1)), axis=0)
+            files = np.append(files, f.reshape((f.shape[0], 28, 28)), axis=0)
     print("Files loaded")
     np.random.shuffle(files)
     return files
@@ -34,14 +34,14 @@ def print_mean(data_):
     plt.subplot(1, 2, 1)
     plt.imshow(ultimate_mean_image, cmap="gray")
     mean_data = np.mean(encoder.predict(data_), axis=0)
-    res = decoder.predict(np.array([mean_data])).reshape((28,28))
+    res = decoder.predict(np.array([mean_data]))[0]
     plt.subplot(1, 2, 2)
     plt.imshow(res, cmap="gray")
     plt.show()
 
 def test_each_dimension(encoder, decoder, data, var):
     for k in range(10):
-        d = data[k].reshape((28,28))
+        d = data[k]
         plt.imshow(d, cmap="gray")
         lattentvector = encoder.predict(np.array([d]))
         show_count = len(lattentvector[0]) 
@@ -52,7 +52,7 @@ def test_each_dimension(encoder, decoder, data, var):
             for j in range(len(var)):
                 tmp_latt = np.copy(lattentvector)
                 tmp_latt[0][i] += var[j]
-                res = decoder.predict(tmp_latt).reshape((28,28))
+                res = decoder.predict(tmp_latt)[0]
                 plt.subplot(len(var), show_count, 1 + j*show_count + i)
                 plt.imshow(res, cmap="gray")
                 plt.axis('off')
