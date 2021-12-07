@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
-from model_AE import get_model
+from model_VAE import get_model
 import os
 
 from matplotlib import pyplot as plt

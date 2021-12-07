@@ -12,6 +12,7 @@ import os
 from matplotlib import pyplot as plt
 
 compressed_size = 32
+lambda_loss = 1e-5
 
 class VariationalLayer(layers.Layer):
 
@@ -21,7 +22,7 @@ class VariationalLayer(layers.Layer):
         # KL divergence loss
         kl_batch = K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
 
-        self.add_loss(-0.5 * K.mean(kl_batch) / (28 * 28), inputs=inputs)
+        self.add_loss(-0.5 * K.mean(kl_batch) * lambda_loss, inputs = inputs)
 
         # Sampling reparameterization
         batch = tf.shape(z_mean)[0]
@@ -31,9 +32,10 @@ class VariationalLayer(layers.Layer):
 
 
 def get_model():
-    optimizer = optimizers.Adam(learning_rate=0.002)
+    optimizer = optimizers.Adam(learning_rate=0.0005)
     loss = "binary_crossentropy"
     metrics = ["mae"]
+
     e_input_layer = keras.Input(shape=(28, 28, 1))
 
     layer = Conv2D(16, 3, activation="relu", strides=2, padding="same")(e_input_layer)
@@ -50,8 +52,7 @@ def get_model():
     encoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     d_input_layer = keras.Input(shape=(compressed_size,))
-    layer = layers.Dense(conv_output.shape[1] * conv_output.shape[2] * conv_output.shape[3], activation="relu")(
-        d_input_layer)
+    layer = layers.Dense(conv_output.shape[1] * conv_output.shape[2] * conv_output.shape[3], activation="relu")(d_input_layer)
     layer = layers.Reshape(conv_output.shape[1:4])(layer)
     layer = Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same")(layer)
     layer = Conv2DTranspose(1, 3, activation="sigmoid", strides=2, padding="same")(layer)
@@ -65,4 +66,5 @@ def get_model():
 
     autoencoder.summary()
     autoencoder.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    
     return autoencoder, encoder, decoder
