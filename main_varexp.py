@@ -5,6 +5,7 @@ from model_VAE import get_model
 import os
 
 from matplotlib import pyplot as plt
+import matplotlib.animation as animation
 
 os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
@@ -78,6 +79,32 @@ def transit(ultimas, categories, nb_steps):
                 plt.imshow(decoder.predict(np.array([inb]))[0], cmap='gray')
             plt.tight_layout()
             plt.show()
+            make_a_gif(ultimas[ulti1], ultimas[ulti2], nb_steps)
+
+
+def make_a_gif_2(vectors, gif=False, name="dynamic_images"):
+    fig = plt.figure()
+    plt.axis('off')
+    plt.title(name)
+    ims = []
+    for v in vectors:
+        ims.append([plt.imshow(decoder.predict(np.array([v]))[0], cmap='gray', animated=True)])
+    ani = animation.ArtistAnimation(fig, ims)
+    if gif:
+        ani.save(name + ".gif")
+    plt.tight_layout()
+    plt.show()
+
+
+def make_a_gif(vector1, vector2, steps, gif=False, name="dynamic_images"):
+    vectors = []
+    vectors.append(vector1)
+    inbetweens = np.linspace(vector1, vector2, steps, endpoint=False)
+    for inb in inbetweens:
+        vectors.append(inb)
+    vectors.append(vector2)
+
+    make_a_gif_2(vectors, gif, name)
 
 
 data, categories = load_files(directory)
@@ -95,4 +122,5 @@ load_status = autoencoder.load_weights("weights")
 
 ultimas, categories = print_mean(valid_data, valid_cat)
 transit(ultimas, categories, 7)
+
 test_each_dimension(encoder, decoder, valid_data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
