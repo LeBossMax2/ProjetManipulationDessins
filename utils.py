@@ -7,7 +7,7 @@ def load_file(filename, max_data, directory="./data"):
     if max_data != None:
         f = f[:min(len(f), max_data)]
     images = f.reshape((f.shape[0], 28, 28))
-    categories = [os.path.splitext(os.path.basename(filename))[0] for _ in range(len(f))]
+    categories = [os.path.splitext(os.path.basename(filename))[0].split("bitmap_")[1] for _ in range(len(f))]
     return images, categories
 
 def load_files(directory="./data", max_data=100000):
