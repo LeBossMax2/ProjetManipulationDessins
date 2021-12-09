@@ -1,7 +1,7 @@
 import numpy as np
 import sklearn.model_selection
 from utils import load_files
-from model_VAE import get_model
+from model_VAE import get_model, train_and_save_weights
 import os
 
 from matplotlib import pyplot as plt
@@ -88,8 +88,7 @@ train_data, valid_data, train_cat, valid_cat = sklearn.model_selection.train_tes
 
 print("Data ready")
 
-#autoencoder.fit(train_data, train_data, epochs = 3, validation_data = (valid_data, valid_data), verbose = 1)
-#autoencoder.save_weights("weights")
+#train_and_save_weights(autoencoder, train_data, valid_data)
 
 load_status = autoencoder.load_weights("weights")
 
