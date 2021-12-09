@@ -11,8 +11,8 @@ import os
 
 from matplotlib import pyplot as plt
 
-compressed_size = 32
-lambda_loss = 1e-5
+compressed_size = 96
+lambda_loss = 1e-6
 
 class VariationalLayer(layers.Layer):
 
@@ -38,10 +38,10 @@ def get_model():
 
     e_input_layer = keras.Input(shape=(28, 28))
 
-    layer = Conv2D(16, 3, activation="relu", strides=2, padding="same")(Reshape((28, 28, 1))(e_input_layer))
-    conv_output = Conv2D(32, 3, activation="relu", strides=2, padding="same")(layer)
+    layer = Conv2D(32, 3, activation="relu", strides=2, padding="same")(Reshape((28, 28, 1))(e_input_layer))
+    conv_output = Conv2D(64, 3, activation="relu", strides=2, padding="same")(layer)
     layer = Flatten()(conv_output)
-    layer = Dense(128, activation="relu")(layer)
+    layer = Dense(256, activation="relu")(layer)
     z_mean = Dense(compressed_size, name="z_mean")(layer)
     z_log_var = Dense(compressed_size, name="z_log_var")(layer)
     z = VariationalLayer()([z_mean, z_log_var])
@@ -54,7 +54,7 @@ def get_model():
     d_input_layer = keras.Input(shape=(compressed_size,))
     layer = layers.Dense(conv_output.shape[1] * conv_output.shape[2] * conv_output.shape[3], activation="relu")(d_input_layer)
     layer = layers.Reshape(conv_output.shape[1:4])(layer)
-    layer = Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same")(layer)
+    layer = Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(layer)
     layer = Conv2DTranspose(1, 3, activation="sigmoid", strides=2, padding="same")(layer)
     layer = Reshape((28, 28))(layer)
 

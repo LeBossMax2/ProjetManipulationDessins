@@ -41,7 +41,7 @@ fig.colorbar(im, cax=cbar_ax)
 plt.show()
 '''
 
-hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 20, validation_data = (valid_data, valid_data), verbose = 2, callbacks=[EarlyStopping(patience=2, monitor="val_loss", min_delta=0)])
+hist = autoencoder.fit(train_data, train_data, batch_size = 128, epochs = 50, validation_data = (valid_data, valid_data), verbose = 2, callbacks=[EarlyStopping(patience=2, monitor="val_loss", min_delta=0)])
 
 
 autoencoder.save_weights("weights")
