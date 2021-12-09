@@ -6,6 +6,7 @@ from tensorflow import keras
 from tensorflow.keras import layers, optimizers
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
 from model_AE import get_model
+from utils import load_files
 import os
 
 from matplotlib import pyplot as plt
@@ -15,18 +16,6 @@ os.environ["CUDA_VISIBLE_DEVICES"]="1"
 directory = r'./data'
 
 autoencoder, encoder, decoder = get_model()
-
-def load_files():
-    files = np.empty((0, 28, 28, 1))
-    for filename in os.listdir(directory):
-        if filename.endswith('.npy') :
-            print(directory + '/' + filename)
-            f = np.load(directory + '/' + filename, mmap_mode='r') / 255.0 # normalize to [0.0, 1.0] range
-            files = np.append(files, f.reshape((f.shape[0], 28, 28, 1)), axis=0)
-    print("Files loaded")
-    np.random.shuffle(files)
-    return files
-
 
 def print_mean(data_):
     plt.figure(figsize=(14, 4))
@@ -60,7 +49,7 @@ def test_each_dimension(encoder, decoder, data, var):
         plt.tight_layout()
         plt.show()
 
-data = load_files()
+data = load_files(directory)
 
 print(f"Shape of data: {data.shape}")
 
