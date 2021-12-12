@@ -78,7 +78,7 @@ def transit(ultimas, categories, nb_steps):
                 plt.imshow(decoder.predict(np.array([inb]))[0], cmap='gray')
             plt.tight_layout()
             plt.show()
-            make_a_gif(ultimas[ulti1], ultimas[ulti2], nb_steps)
+            make_a_gif(decoder, ultimas[ulti1], ultimas[ulti2], nb_steps, True)
 
 
 

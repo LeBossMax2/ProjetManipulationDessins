@@ -12,7 +12,7 @@ def load_file(filename, max_data, directory="./data"):
     categories = [os.path.splitext(os.path.basename(filename))[0].split("bitmap_")[1] for _ in range(len(f))]
     return images, categories
 
-def load_files(directory="./data", max_data=100000):
+def load_files(directory="./data", max_data=10000):
     images = np.empty((0, 28, 28))
     categories = []
     files = []
@@ -49,4 +49,4 @@ def make_a_gif(decoder, vector1, vector2, steps, gif=False, name="dynamic_images
         vectors.append(inb)
     vectors.append(vector2)
 
-    make_a_gif_2(vectors, gif, name)
+    make_a_gif_2(decoder, vectors, gif, name)
