@@ -1,16 +1,9 @@
 import numpy as np
-import tensorflow as tf
 import sklearn.model_selection
 import matplotlib.pyplot as plt
-import tensorflow.keras.backend as K
-from tensorflow import keras
-from tensorflow.keras import layers, optimizers
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, Conv2DTranspose
 from tensorflow.keras.callbacks import EarlyStopping
 import model_VAE
 from utils import load_files
-
-import os
 
 from matplotlib import pyplot as plt
 
@@ -67,9 +60,10 @@ def plot_label_clusters(encoder, x, y):
         plt.subplot(4, model_VAE.compressed_size // 8, zi // 2 + 1)
         for cat, val in zip(categories, vals):
             z = encoder.predict(val)
-            plt.scatter(z[:, zi], z[:, zi + 1], label=cat, alpha=.2, s=3**2)
+            plt.scatter(z[:, zi], z[:, zi + 1], label=cat, alpha=.1, s=3**2)
         plt.xlabel("z[" + str(zi) + "]")
         plt.ylabel("z[" + str(zi + 1) + "]")
+    plt.tight_layout()
     plt.show()
 
 plot_label_clusters(encoder, valid_data, valid_cat)
@@ -81,13 +75,11 @@ for k in range(100):
     for i in range(show_count):
         d = valid_data[i + k * show_count]
         plt.subplot(2, show_count, 1 + i)
-        plt.imshow(d, cmap="gray")
-        plt.colorbar()
+        plt.imshow(d, cmap="gray", vmin=0, vmax=1)
         plt.axis('off')
         res = autoencoder.predict(np.array([d]))[0]
         plt.subplot(2, show_count, 1 + i + show_count)
-        plt.imshow(res, cmap="gray")
+        plt.imshow(res, cmap="gray", vmin=0, vmax=1)
         plt.axis('off')
-        plt.colorbar()
     plt.tight_layout()
     plt.show()

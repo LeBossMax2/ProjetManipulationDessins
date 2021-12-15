@@ -57,19 +57,22 @@ def print_mean(data_, categories_):
         plt.figure(figsize=(14, 4))
         ultimate_mean_image = np.mean(dat, axis=0)
         plt.subplot(1, 3, 1)
-        plt.imshow(ultimate_mean_image, cmap="gray")
+        plt.imshow(ultimate_mean_image, cmap="gray", vmin=0, vmax=1)
         plt.title("Mean image of all " + cat)
+        plt.axis('off')
         lattent_vectors = encoder.predict(dat)
         mean_data = np.mean(lattent_vectors, axis=0)
         best_data_index = np.argmin([np.dot(lat - mean_data, lat - mean_data) for lat in lattent_vectors], axis=0)
         ultimas.append(lattent_vectors[best_data_index])
         res = decoder.predict(np.array([lattent_vectors[best_data_index]]))[0]
         plt.subplot(1, 3, 2)
-        plt.imshow(res, cmap="gray")
+        plt.imshow(res, cmap="gray", vmin=0, vmax=1)
         plt.title("Ultimate " + cat)
+        plt.axis('off')
         plt.subplot(1, 3, 3)
-        plt.imshow(dat[best_data_index], cmap="gray")
+        plt.imshow(dat[best_data_index], cmap="gray", vmin=0, vmax=1)
         plt.title("Base image for Ultimate " + cat)
+        plt.axis('off')
         plt.show()
     return ultimas, categories_unique
 
@@ -77,7 +80,8 @@ def print_mean(data_, categories_):
 def test_each_dimension(encoder, decoder, data, var):
     for k in range(10):
         d = data[k]
-        plt.imshow(d, cmap="gray")
+        plt.imshow(d, cmap="gray", vmin=0, vmax=1)
+        plt.axis('off')
         lattentvector = encoder.predict(np.array([d]))
         show_count = len(lattentvector[0]) 
         print(f"LATTENTVECTOR:{lattentvector}\n\n")
@@ -89,9 +93,8 @@ def test_each_dimension(encoder, decoder, data, var):
                 tmp_latt[0][i] += var[j]
                 res = decoder.predict(tmp_latt)[0]
                 plt.subplot(len(var), show_count, 1 + j*show_count + i)
-                plt.imshow(res, cmap="gray")
+                plt.imshow(res, cmap="gray", vmin=0, vmax=1)
                 plt.axis('off')
-                #plt.colorbar()
         plt.tight_layout()
         plt.show()
 
@@ -102,17 +105,20 @@ def transit(ultimas, categories, nb_steps):
         for ulti2 in range(ulti1+1, len(ultimas)):
             plt.figure(figsize=(14, 4))
             plt.subplot(1, cols, 1)
-            plt.imshow(decoder.predict(np.array([ultimas[ulti1]]))[0], cmap='gray')
+            plt.imshow(decoder.predict(np.array([ultimas[ulti1]]))[0], cmap='gray', vmin=0, vmax=1)
             plt.title("Ultima " + categories[ulti1])
+            plt.axis('off')
             plt.subplot(1, cols, cols)
-            plt.imshow(decoder.predict(np.array([ultimas[ulti2]]))[0], cmap='gray')
+            plt.imshow(decoder.predict(np.array([ultimas[ulti2]]))[0], cmap='gray', vmin=0, vmax=1)
             plt.title("Ultima " + categories[ulti2])
+            plt.axis('off')
             inbetweens = np.linspace(ultimas[ulti1], ultimas[ulti2], nb_steps, endpoint=False)
             ctr = 0
             for inb in inbetweens:
                 plt.subplot(1, cols, 2 + ctr)
                 ctr += 1
-                plt.imshow(decoder.predict(np.array([inb]))[0], cmap='gray')
+                plt.imshow(decoder.predict(np.array([inb]))[0], cmap='gray', vmin=0, vmax=1)
+                plt.axis('off')
             plt.tight_layout()
             plt.show()
             make_a_gif(decoder, ultimas[ulti1], ultimas[ulti2], nb_steps, True)
