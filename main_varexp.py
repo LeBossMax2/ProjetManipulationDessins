@@ -12,6 +12,43 @@ directory = r'./data'
 
 autoencoder, encoder, decoder = get_model()
 
+def plot_loss_acc(history):
+    """Plot training and (optionally) validation loss and accuracy"""
+
+    loss = history.history['loss']
+    epochs = range(1, len(loss) + 1)
+
+    plt.figure(figsize=(10, 10))
+
+    plt.subplot(2, 1, 1)
+    plt.plot(epochs, loss, '.--', label='Training loss')
+    final_loss = loss[-1]
+    title = 'Training loss: {:.4f}'.format(final_loss)
+    plt.ylabel('Loss')
+    if 'val_loss' in history.history:
+        val_loss = history.history['val_loss']
+        plt.plot(epochs, val_loss, 'o-', label='Validation loss')
+        final_val_loss = val_loss[-1]
+        title += ', Validation loss: {:.4f}'.format(final_val_loss)
+    plt.title(title)
+    plt.legend()
+
+    acc = history.history['accuracy']
+
+    plt.subplot(2, 1, 2)
+    plt.plot(epochs, acc, '.--', label='Training acc')
+    final_acc = acc[-1]
+    title = 'Training accuracy: {:.2f}%'.format(final_acc * 100)
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    if 'val_accuracy' in history.history:
+        val_acc = history.history['val_accuracy']
+        plt.plot(epochs, val_acc, 'o-', label='Validation acc')
+        final_val_acc = val_acc[-1]
+        title += ', Validation accuracy: {:.2f}%'.format(final_val_acc * 100)
+    plt.title(title)
+    plt.legend()
+
 def print_mean(data_, categories_):
     categories_unique = np.unique(categories_)
     data_categorised = [data_[categories_ == cat] for cat in categories_unique]
@@ -92,11 +129,28 @@ train_data, valid_data, train_cat, valid_cat = sklearn.model_selection.train_tes
 
 print("Data ready")
 
-#train_and_save_weights(autoencoder, train_data, valid_data)
+history = train_and_save_weights(autoencoder, train_data, valid_data)
+plot_loss_acc(history)
 
 load_status = autoencoder.load_weights("weights")
 
-ultimas, categories = print_mean(valid_data, valid_cat)
-transit(ultimas, categories, 7)
+#ultimas, categories = print_mean(valid_data, valid_cat)
+#transit(ultimas, categories, 7)
 
-test_each_dimension(encoder, decoder, valid_data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
+#test_each_dimension(encoder, decoder, valid_data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
+
+# Show prediction examples
+show_count = 4
+fig, axes = plt.subplots(nrows=show_count, ncols=2)
+
+for i in range(0,8,2)  :
+    im = axes.flat[i].imshow(data[i], cmap="gray")
+    axes.flat[i].axis('off')
+    res = autoencoder.predict(np.array([data[i]]))[0]
+    axes.flat[i+1].imshow(res, cmap="gray")
+    axes.flat[i+1].axis('off')
+
+fig.subplots_adjust(right=0.8)
+cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+fig.colorbar(im, cax=cbar_ax)
+plt.show()
