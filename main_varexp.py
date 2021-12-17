@@ -135,15 +135,14 @@ train_data, valid_data, train_cat, valid_cat = sklearn.model_selection.train_tes
 
 print("Data ready")
 
-history = train_and_save_weights(autoencoder, train_data, valid_data)
-plot_loss_acc(history)
+train_and_save_weights(autoencoder, train_data, valid_data)
 
 load_status = autoencoder.load_weights("weights")
 
-#ultimas, categories = print_mean(valid_data, valid_cat)
-#transit(ultimas, categories, 7)
+ultimas, categories = print_mean(valid_data, valid_cat)
+transit(ultimas, categories, 7)
 
-#test_each_dimension(encoder, decoder, valid_data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
+test_each_dimension(encoder, decoder, valid_data, var = [-4, -3, -2, -1, 0, 1, 2, 3, 4])
 
 # Show prediction examples
 show_count = 4
